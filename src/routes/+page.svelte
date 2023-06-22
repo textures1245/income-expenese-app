@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { PageData } from './$types';
+	import { watch } from './../lib/middleware/watch';
 
 	let methodSelected = '';
 	let statementOpts = {
@@ -12,20 +13,24 @@
 	export let data: PageData;
 	let lists: any[] = [];
 	$: {
-		const filteredLists = [...data.incomes, ...data.expenses].sort(
+		lists = [...data.incomes, ...data.expenses].sort(
 			(a, b) => a.Date.getSeconds() - b.Date.getSeconds()
 		);
-
-		lists =
-			statementOpts.statementFilter === 'All'
-				? filteredLists
-				: filteredLists.filter((l) => l.type === statementOpts.statementFilter);
-
-		lists =
-			statementOpts.statementDate === 'Today'
-				? lists.filter((l) => (l.Date as Date).getSeconds() < new Date().getSeconds())
-				: lists;
 	}
+
+	watch(statementOpts.statementFilter, ($filter: string) => {
+		lists =
+			$filter === 'All' ? lists : lists.filter((l) => l.type === statementOpts.statementFilter);
+	});
+
+	watch(statementOpts.statementDateOpts, ($dateSelected: string) => {
+		lists =
+			$dateSelected === 'Today'
+				? lists.filter(
+						(l) => new Date(l.Date).toLocaleDateString() === new Date().toLocaleDateString()
+				  )
+				: lists;
+	});
 </script>
 
 <section />
@@ -48,6 +53,7 @@
 				<option value={opt}>{opt}</option>
 			{/each}
 		</select>
+
 		{#each lists as list, i}
 			<div id={'list' + i}>
 				<form action="?/deleteList&id={list.id}" method="POST">
@@ -68,6 +74,11 @@
 						>
 					</article>
 				</form>
+			</div>
+		{:else}
+			<div style="text-align: center;" class="headings">
+				<h2>You don't have any statements</h2>
+				<h2>Try to add one!</h2>
 			</div>
 		{/each}
 	</div>
