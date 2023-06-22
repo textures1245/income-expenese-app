@@ -1,31 +1,29 @@
 <script lang="ts">
+	import { writable } from 'svelte/store';
 	import type { PageData } from './$types';
 	import { watch } from './../lib/middleware/watch';
 
+	const statementFilter = writable('All');
+	const statementDate = writable('Today');
 	let methodSelected = '';
 	let statementOpts = {
-		statementFilter: 'All',
-		statementDate: 'Today',
 		statementFilterOpts: ['All', 'Income', 'Expense'],
 		statementDateOpts: ['Today', 'Others']
 	};
 
 	export let data: PageData;
 	let lists: any[] = [];
-	$: {
-		lists = [...data.incomes, ...data.expenses].sort(
-			(a, b) => a.Date.getSeconds() - b.Date.getSeconds()
-		);
-	}
+	let filterList = [...data.incomes, ...data.expenses].sort(
+		(a, b) => a.Date.getSeconds() - b.Date.getSeconds()
+	);
 
-	watch(statementOpts.statementFilter, ($filter: string) => {
+	watch([statementFilter, statementDate], ([$statementFilter, $statementDate]) => {
 		lists =
-			$filter === 'All' ? lists : lists.filter((l) => l.type === statementOpts.statementFilter);
-	});
-
-	watch(statementOpts.statementDateOpts, ($dateSelected: string) => {
+			($statementFilter as string) === 'All'
+				? filterList
+				: filterList.filter((l) => l.type === $statementFilter);
 		lists =
-			$dateSelected === 'Today'
+			$statementDate === 'Today'
 				? lists.filter(
 						(l) => new Date(l.Date).toLocaleDateString() === new Date().toLocaleDateString()
 				  )
@@ -42,13 +40,13 @@
 
 <div id="wrapper" class="grid">
 	<div style="height: 80%;">
-		<h2>Today</h2>
-		<select id="DateSelector" bind:value={statementOpts.statementDate} required>
+		<h2>{$statementDate}</h2>
+		<select id="DateSelector" bind:value={$statementDate} required>
 			{#each statementOpts.statementDateOpts as opt}
 				<option value={opt}>{opt}</option>
 			{/each}
 		</select>
-		<select id="typeSelector" bind:value={statementOpts.statementFilter} required>
+		<select id="typeSelector" bind:value={$statementFilter} required>
 			{#each statementOpts.statementFilterOpts as opt}
 				<option value={opt}>{opt}</option>
 			{/each}
