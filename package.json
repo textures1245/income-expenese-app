@@ -32,6 +32,9 @@
 	},
 	"type": "module",
 	"dependencies": {
-		"@prisma/client": "^4.16.0"
+		"@prisma/client": "^4.16.0",
+		"bcrypt": "^5.1.0",
+		"cookie-parser": "^1.4.6",
+		"jsonwebtoken": "^9.0.0"
 	}
 }
