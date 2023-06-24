@@ -10,16 +10,32 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model User {
+  id Int @id @default(autoincrement())
+  userId String @unique
+  createdAt DateTime @default(now())
+  email String @unique 
+  password String
+  incomes Income[]
+  expenses Expense[]
+  
+}
+
 model Income {
   id     Int      @id @default(autoincrement())
   type   String   @default("Income")
+  owner User @relation(fields: [ownerId], references: [id])
+  ownerId Int
   amount Int
   detail String
   Date   DateTime @default(now())
+  
 }
 
 model Expense {
   id     Int      @id @default(autoincrement())
+  owner User @relation(fields: [ownerId], references: [id])
+  ownerId Int
   type   String   @default("Expense")
   amount Int
   detail String
