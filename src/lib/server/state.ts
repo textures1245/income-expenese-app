@@ -1,9 +1,12 @@
-import * as z from 'zod';
+import { writable } from 'svelte/store';
+import type { UserInterface } from './type';
 
-const UserSchema = z.object({
-    isLoggedIn: z.boolean(),
-    email: z.string(),
-    sessionTimeout: z.number(),
-})
+export class User implements UserInterface {
+	constructor(
+		public isLoggedIn: boolean,
+		public email: string | null,
+		public sessionTimeout: number | null
+	) {}
+}
 
-export type User = z.infer<>
+export const currentUser = writable(new User(false, null, null));
