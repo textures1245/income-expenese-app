@@ -1,8 +1,5 @@
 import { fail, redirect } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
-import type { Prisma } from '@prisma/client';
-import { initLocalStorage } from '$lib/middleware/localStorage';
-import { currentUser, User } from '../../states/state';
 
 // export const load: PageServerLoad = async () => {
 // 	const res = localStorage.getItem('userData');
@@ -41,12 +38,6 @@ export const actions: Actions = {
 					expenses: undefined
 				}
 			});
-			// if (newUser) {
-			// 	const sessionTimeout = 60 * 60 * 1000;
-			// 	currentUser.set(new User(newUser.id, true, newUser.email, sessionTimeout));
-			// 	const userData = { email: currentUser, timeout: 4096000 };
-			// 	localStorage.setItem('userData', JSON.stringify(userData));
-			// }
 		} catch (err) {
 			console.error(err);
 			return fail(500, { message: "Could't create User model" });
@@ -55,7 +46,7 @@ export const actions: Actions = {
 		return { status: 201 };
 	},
 
-	login: async ({ request }) => {
+	login: async ({ request, cookies }) => {
 		const { email, password } = Object.fromEntries(await request.formData()) as {
 			email: string;
 			password: string;
@@ -69,19 +60,27 @@ export const actions: Actions = {
 				}
 			});
 
-			// if (user) {
-			// 	const userData = { email: currentUser, timeout: 4096000 };
-			// 	localStorage.setItem('userData', JSON.stringify(userData));
-			// }
 			if (user) {
-				const sessionTimeout = 60 * 60 * 1000;
-				currentUser.set(new User(user.id, true, user.email, sessionTimeout));
+				cookies.set('userEmail', user.email, {
+					path: '/',
+					httpOnly: true,
+					sameSite: 'strict',
+					secure: process.env.NODE_ENV === 'production',
+					maxAge: 60 * 60 * 24 * 7
+				});
+
+				cookies.set('userId', user.id.toString(), {
+					path: '/',
+					httpOnly: true,
+					sameSite: 'strict',
+					secure: process.env.NODE_ENV === 'production',
+					maxAge: 60 * 60 * 24 * 7
+				});
 			}
 		} catch (err) {
 			console.error(err);
 			return fail(500, { message: "Could't create User model" });
 		}
-
-		throw redirect(301, '/');
+		throw redirect(302, '/');
 	}
 };

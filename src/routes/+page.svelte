@@ -1,17 +1,9 @@
 <script lang="ts">
 	import { writable } from 'svelte/store';
 	import type { PageData } from './$types';
-	import type { PageData as PageUserData } from './login/$types';
-	import { redirect } from '@sveltejs/kit';
-
-	import { onMount, onDestroy } from 'svelte';
-	import { currentUser } from '../states/state';
-	import { goto } from '$app/navigation';
 	import { watch } from './../lib/middleware/watch';
 
-	let isUserAuth = $currentUser.isLoggedIn;
-	if (!isUserAuth) redirect(301, '/login');
-
+	import UserBadge from './../components/UserBadge.svelte';
 	const statementFilter = writable('All');
 	const statementDate = writable('Today');
 	let methodSelected = '';
@@ -20,18 +12,17 @@
 		statementDateOpts: ['Today', 'Others']
 	};
 
-	export let statementData: PageData;
+	export let data: PageData;
+	let filtersList = [...data.incomes, ...data.expenses].sort(
+		(a, b) => a.Date.getSeconds() - b.Date.getSeconds()
+	);
 	let lists: any[] = [];
-
-	if (typeof statementData !== 'undefined') {
-		lists = [...statementData.incomes, ...statementData.expenses].sort(
-			(a, b) => a.Date.getSeconds() - b.Date.getSeconds()
-		);
+	if (typeof data !== 'undefined') {
 		watch([statementFilter, statementDate], ([$statementFilter, $statementDate]) => {
 			lists =
 				($statementFilter as string) === 'All'
-					? lists
-					: lists.filter((l) => l.type === $statementFilter);
+					? filtersList
+					: filtersList.filter((l) => l.type === $statementFilter);
 			lists =
 				$statementDate === 'Today'
 					? lists.filter(
@@ -43,9 +34,12 @@
 	}
 </script>
 
-<div class="headings">
-	<h1>Income - Expenses Application</h1>
-	<h2>Simple app working with svelteKit + prisma + sqlite</h2>
+<div class="grid">
+	<div class="headings">
+		<h1>Income - Expenses Application</h1>
+		<h2>Simple app working with svelteKit + prisma + sqlite</h2>
+	</div>
+	<UserBadge userData={data.userData} />
 </div>
 
 <div id="wrapper" class="grid">
