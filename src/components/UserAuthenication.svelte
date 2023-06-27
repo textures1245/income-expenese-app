@@ -29,6 +29,7 @@
 				/>
 				<button type="submit" class="contrast">Login</button>
 			</form>
+			<button on:click={() => (authMode = 'REGISTER')}>Go to Register</button>
 		{:else}
 			<hgroup>
 				<h1>Sign up</h1>
@@ -52,8 +53,9 @@
 					required
 				/>
 
-				<button type="submit" class="contrast">Login</button>
+				<button type="submit" class="contrast">Register</button>
 			</form>
+			<button on:click={() => (authMode = 'LOGIN')}>Go to Login</button>
 		{/if}
 	</div>
 	<div style="width: 100%; height: 100%;" class="img-container">

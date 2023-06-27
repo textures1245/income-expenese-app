@@ -2,6 +2,7 @@ import * as z from 'zod';
 
 export const UserSessionSchema = z.object({
 	isLoggedIn: z.boolean(),
+	userId: z.number(),
 	email: z.string().nullable(),
 	sessionTimeout: z.number().nullable()
 });

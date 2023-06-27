@@ -1,8 +1,8 @@
-import { fail } from '@sveltejs/kit';
+import { fail, redirect } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 import type { Prisma } from '@prisma/client';
 import { initLocalStorage } from '$lib/middleware/localStorage';
-import { currentUser, User } from '../../lib/server/state';
+import { currentUser, User } from '../../states/state';
 
 // export const load: PageServerLoad = async () => {
 // 	const res = localStorage.getItem('userData');
@@ -32,21 +32,21 @@ export const actions: Actions = {
 		};
 
 		try {
-			const newUser = await prisma.user.create({
+			await prisma.user.create({
 				data: {
 					userId: crypto.randomUUID(),
 					email,
 					password,
-					incomes: [] as Prisma.IncomeCreateNestedManyWithoutOwnerInput,
-					expenses: [] as Prisma.ExpenseCreateNestedManyWithoutOwnerInput
+					incomes: undefined,
+					expenses: undefined
 				}
 			});
-			if (newUser) {
-				const sessionTimeout = 60 * 60 * 1000;
-				currentUser.set(new User(true, newUser.email, sessionTimeout));
-				const userData = { email: currentUser, timeout: 4096000 };
-				localStorage.setItem('userData', JSON.stringify(userData));
-			}
+			// if (newUser) {
+			// 	const sessionTimeout = 60 * 60 * 1000;
+			// 	currentUser.set(new User(newUser.id, true, newUser.email, sessionTimeout));
+			// 	const userData = { email: currentUser, timeout: 4096000 };
+			// 	localStorage.setItem('userData', JSON.stringify(userData));
+			// }
 		} catch (err) {
 			console.error(err);
 			return fail(500, { message: "Could't create User model" });
@@ -69,15 +69,19 @@ export const actions: Actions = {
 				}
 			});
 
+			// if (user) {
+			// 	const userData = { email: currentUser, timeout: 4096000 };
+			// 	localStorage.setItem('userData', JSON.stringify(userData));
+			// }
 			if (user) {
 				const sessionTimeout = 60 * 60 * 1000;
-				currentUser.set(new User(true, user.email, sessionTimeout));
-				const userData = { email: currentUser, timeout: 4096000 };
-				localStorage.setItem('userData', JSON.stringify(userData));
+				currentUser.set(new User(user.id, true, user.email, sessionTimeout));
 			}
 		} catch (err) {
 			console.error(err);
 			return fail(500, { message: "Could't create User model" });
 		}
+
+		throw redirect(301, '/');
 	}
 };

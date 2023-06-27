@@ -1,11 +1,26 @@
 import { prisma } from './../lib/server/prisma';
 import { fail } from '@sveltejs/kit';
 import type { PageServerLoad, Actions } from './$types';
+import { redirect } from '@sveltejs/kit';
+import { User, currentUser } from '../states/state';
+import { onDestroy } from 'svelte';
 
 export const load: PageServerLoad = async () => {
+	let userId = -1;
+	const userSubscriber = currentUser.subscribe(async (user) => (userId = user.userId));
+	const statement = (await prisma.user.findUnique({
+		where: {
+			id: userId
+		},
+		include: {
+			incomes: true,
+			expenses: true
+		}
+	})) ?? { incomes: [], expenses: [] };
+
 	return {
-		incomes: await prisma.income.findMany(),
-		expenses: await prisma.expense.findMany()
+		incomes: statement.incomes ?? [],
+		expenses: statement.expenses ?? []
 	};
 };
 
@@ -16,12 +31,18 @@ export const actions: Actions = {
 			detail: string;
 		};
 		try {
-			await prisma.income.create({
-				data: {
-					amount: Number(amount),
-					detail
+			const userSubscriber = currentUser.subscribe(async (user) => {
+				if (user.isLoggedIn) {
+					await prisma.income.create({
+						data: {
+							detail,
+							amount: Number(amount),
+							ownerId: user.userId
+						}
+					});
 				}
 			});
+			onDestroy(userSubscriber);
 		} catch (err) {
 			console.error(err);
 			return fail(500, { message: "Could't create Income marker" });
@@ -36,12 +57,18 @@ export const actions: Actions = {
 			detail: string;
 		};
 		try {
-			await prisma.expense.create({
-				data: {
-					amount: Number(amount),
-					detail
+			const userSubscriber = currentUser.subscribe(async (user) => {
+				if (user.isLoggedIn) {
+					await prisma.expense.create({
+						data: {
+							detail,
+							amount: Number(amount),
+							ownerId: user.userId
+						}
+					});
 				}
 			});
+			onDestroy(userSubscriber);
 		} catch (err) {
 			console.error(err);
 			return fail(500, { message: "Could't create Expense marker" });
