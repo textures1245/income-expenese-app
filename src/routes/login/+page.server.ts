@@ -1,25 +1,5 @@
 import { fail, redirect } from '@sveltejs/kit';
-import type { Actions, PageServerLoad } from './$types';
-
-// export const load: PageServerLoad = async () => {
-// 	const res = localStorage.getItem('userData');
-// 	initLocalStorage();
-// 	let timeoutUser;
-// 	if (res) {
-// 		clearTimeout(timeoutUser);
-
-// 		const userData: { email: string; timeout: number } = JSON.parse(res);
-// 		currentUser.set(new User(true, userData.email, userData.timeout));
-// 		timeoutUser = setTimeout(() => {
-// 			currentUser.set(new User(false, null, null));
-// 		}, userData.timeout);
-// 	} else {
-// 		alert('Please login before using application');
-// 	}
-// 	return {
-// 		user: currentUser
-// 	};
-// };
+import type { Actions } from './$types';
 
 export const actions: Actions = {
 	signup: async ({ request }) => {
