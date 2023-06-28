@@ -81,6 +81,7 @@ export const actions: Actions = {
 			console.error(err);
 			return fail(500, { message: "Could't create User model" });
 		}
-		throw redirect(302, '/');
+		return { status: 201 };
+		// throw redirect(302, '/');
 	}
 };

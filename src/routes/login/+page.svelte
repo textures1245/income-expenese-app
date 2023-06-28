@@ -12,13 +12,13 @@
 				<h1>Sign in</h1>
 				<h2>Get track for your statements</h2>
 			</hgroup>
-			<form action="?/login" method="post">
+			<form action="?/login" method="POST">
 				<input
 					type="email"
 					name="email"
 					placeholder="Email address"
 					aria-label="email"
-					id="password"
+					id="email"
 					required
 				/>
 				<input
